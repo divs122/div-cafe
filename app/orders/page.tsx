@@ -27,10 +27,32 @@ interface Order {
   }
 }
 
+const OrderItemComponent = ({ item, orderId, index }: { item: OrderItem; orderId: string; index: number }) => (
+  <div key={`${orderId}-item-${index}`} className="flex items-center gap-4 py-2">
+    <div className="w-16 h-16 relative">
+      <Image
+        src={item.image || 'https://via.placeholder.com/64'}
+        alt={item.name}
+        fill
+        className="object-cover rounded"
+      />
+    </div>
+    <div className="flex-1">
+      <p className="font-medium">{item.name}</p>
+      <p className="text-sm text-gray-600">
+        Quantity: {item.quantity}
+      </p>
+    </div>
+    <div className="text-right">
+      <p className="font-medium">₹{item.price * item.quantity}</p>
+    </div>
+  </div>
+);
+
 export default function OrdersPage() {
   const searchParams = useSearchParams()
   const highlightedOrderId = searchParams.get('highlight')
-  const [orders, setOrders] = useState<any[]>([])
+  const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -39,7 +61,7 @@ export default function OrdersPage() {
     const savedOrders = localStorage.getItem('savedOrders')
     if (savedOrders) {
       try {
-        const parsedOrders = JSON.parse(savedOrders)
+        const parsedOrders = JSON.parse(savedOrders) as Order[]
         setOrders(parsedOrders)
         setLoading(false)
       } catch (error) {
@@ -54,7 +76,7 @@ export default function OrdersPage() {
         const data = await response.json()
         
         if (data.success) {
-          const apiOrders = data.orders || []
+          const apiOrders = (data.orders || []) as Order[]
           setOrders(apiOrders)
           // Save to localStorage for offline access
           localStorage.setItem('savedOrders', JSON.stringify(apiOrders))
@@ -133,7 +155,7 @@ export default function OrdersPage() {
       <h1 className="text-2xl font-bold mb-8">Your Orders</h1>
       
       <div className="space-y-6">
-        {orders.map((order) => (
+        {(orders as Array<Order>).map((order: Order) => (
           <div
             key={order.id}
             className={`bg-white rounded-lg shadow-sm border ${
@@ -162,25 +184,12 @@ export default function OrdersPage() {
 
               <div className="border-t border-b border-gray-100 py-4 my-4">
                 {order.items.map((item, index) => (
-                  <div key={index} className="flex items-center gap-4 py-2">
-                    <div className="w-16 h-16 relative">
-                      <Image
-                        src={item.image || 'https://via.placeholder.com/64'}
-                        alt={item.name}
-                        fill
-                        className="object-cover rounded"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-gray-600">
-                        Quantity: {item.quantity}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">₹{item.price * item.quantity}</p>
-                    </div>
-                  </div>
+                  <OrderItemComponent
+                    key={`${order.id}-item-${index}`}
+                    item={item}
+                    orderId={order.id}
+                    index={index}
+                  />
                 ))}
               </div>
 
