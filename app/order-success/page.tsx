@@ -1,61 +1,103 @@
 'use client'
 
-import Link from 'next/link'
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { CheckCircle } from 'lucide-react'
 
-export default function OrderSuccessPage() {
+function OrderSuccessContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
 
   return (
-    <div className="container mx-auto px-4 py-16">
-      <motion.div 
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="max-w-md mx-auto text-center"
-      >
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 20 }}
-          className="w-20 h-20 mx-auto mb-6 text-green-500"
-        >
-          <CheckCircle className="w-full h-full" />
-        </motion.div>
-
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          Order Placed Successfully!
-        </h1>
-        
-        <p className="text-gray-600 mb-8">
-          Thank you for your order! We've sent a confirmation email with your order details.
-          {orderId && <span className="block mt-2 font-medium">Order ID: {orderId}</span>}
-        </p>
-
-        <div className="space-y-4">
-          <Link 
-            href="/orders" 
-            className="block w-full bg-primary text-white py-3 px-6 rounded-lg hover:bg-primary-dark transition-colors"
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 200, damping: 20 }}
+            className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center"
           >
-            Track Order
-          </Link>
-          
-          <Link 
-            href="/menu"
-            className="block w-full bg-gray-100 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            Order More
-          </Link>
-        </div>
+            <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </motion.div>
 
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-          <p className="text-blue-600 text-sm">
-            Your order is being prepared. You'll receive updates about your order status via email.
-          </p>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mt-6 text-3xl font-extrabold text-gray-900"
+          >
+            Order Placed Successfully!
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-2 text-sm text-gray-600"
+          >
+            Your order has been confirmed and will be ready soon.
+          </motion.p>
+
+          {orderId && (
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mt-2 text-sm text-gray-600"
+            >
+              Order ID: <span className="font-medium">{orderId}</span>
+            </motion.p>
+          )}
+
+          <div className="mt-6 space-y-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <Link
+                href={`/orders${orderId ? `?highlight=${orderId}` : ''}`}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              >
+                View Order Status
+              </Link>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+            >
+              <Link
+                href="/menu"
+                className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              >
+                Order More
+              </Link>
+            </motion.div>
+          </div>
         </div>
-      </motion.div>
+      </div>
     </div>
+  )
+}
+
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
+            <div className="w-8 h-8 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        </div>
+      </div>
+    }>
+      <OrderSuccessContent />
+    </Suspense>
   )
 } 

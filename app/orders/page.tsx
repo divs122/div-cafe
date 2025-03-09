@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -28,7 +28,7 @@ const OrderItemComponent = ({ item, orderId, index }: { item: OrderItem; orderId
   </div>
 );
 
-export default function OrdersPage() {
+function OrdersContent() {
   const searchParams = useSearchParams()
   const highlightedOrderId = searchParams.get('highlight')
   const [orders, setOrders] = useState<Order[]>([])
@@ -134,7 +134,7 @@ export default function OrdersPage() {
       <h1 className="text-2xl font-bold mb-8">Your Orders</h1>
       
       <div className="space-y-6">
-        {(orders as Array<Order>).map((order: Order) => (
+        {orders.map((order) => (
           <div
             key={order.id}
             className={`bg-white rounded-lg shadow-sm border ${
@@ -190,5 +190,19 @@ export default function OrdersPage() {
         ))}
       </div>
     </div>
+  )
+}
+
+export default function OrdersPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    }>
+      <OrdersContent />
+    </Suspense>
   )
 } 

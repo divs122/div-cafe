@@ -1,143 +1,138 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 
 interface OrderStatus {
   id: string
-  status: string
-  paymentStatus: string
+  status: 'pending' | 'preparing' | 'ready' | 'delivered'
+  estimatedTime?: number
 }
 
-export default function OrderStatus() {
+function OrderStatusContent() {
   const searchParams = useSearchParams()
-  const [order, setOrder] = useState<OrderStatus | null>(null)
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(true)
+  const orderId = searchParams.get('orderId')
+  const [status, setStatus] = useState<OrderStatus | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const merchantTransactionId = searchParams.get('merchantTransactionId')
-    
-    if (!merchantTransactionId) {
-      setError('Order ID not found')
-      setIsLoading(false)
-      return
-    }
-
-    const checkStatus = async () => {
+    const fetchStatus = async () => {
       try {
-        const response = await fetch(`/api/orders/${merchantTransactionId}`)
-        if (!response.ok) throw new Error('Failed to fetch order status')
-        
+        // Simulated API call
+        const response = await fetch(`/api/orders/${orderId}/status`)
         const data = await response.json()
-        setOrder(data.order)
+        
+        if (data.success) {
+          setStatus(data.status)
+        } else {
+          setError('Failed to fetch order status')
+        }
       } catch (error) {
-        console.error('Status check error:', error)
-        setError('Failed to fetch order status')
+        setError('Failed to load order status. Please try again later.')
       } finally {
-        setIsLoading(false)
+        setLoading(false)
       }
     }
 
-    checkStatus()
-  }, [searchParams])
+    if (orderId) {
+      fetchStatus()
+    } else {
+      setError('No order ID provided')
+      setLoading(false)
+    }
+  }, [orderId])
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Checking order status...</p>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
       </div>
     )
   }
 
-  if (error || !order) {
+  if (error || !status) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Error</h1>
-          <p className="text-red-500 mb-6">{error}</p>
-          <Link href="/menu" className="btn-primary">
-            Return to Menu
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-md mx-auto">
+          <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg p-4 mb-4">
+            {error || 'Order not found'}
+          </div>
+          <Link
+            href="/orders"
+            className="block text-center bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-dark"
+          >
+            View All Orders
           </Link>
         </div>
       </div>
     )
   }
-
-  const getStatusMessage = () => {
-    if (order.paymentStatus !== 'COMPLETED') {
-      return {
-        title: 'Payment Failed',
-        message: 'Your payment was not successful. Please try again.',
-        color: 'text-red-500',
-      }
-    }
-
-    switch (order.status) {
-      case 'CONFIRMED':
-        return {
-          title: 'Order Confirmed',
-          message: 'Your order has been confirmed and will be prepared soon.',
-          color: 'text-green-500',
-        }
-      case 'PREPARING':
-        return {
-          title: 'Preparing Order',
-          message: 'Your order is being prepared.',
-          color: 'text-blue-500',
-        }
-      case 'READY':
-        return {
-          title: 'Ready for Pickup',
-          message: 'Your order is ready for pickup!',
-          color: 'text-green-500',
-        }
-      case 'COMPLETED':
-        return {
-          title: 'Order Completed',
-          message: 'Thank you for your order!',
-          color: 'text-green-500',
-        }
-      case 'CANCELLED':
-        return {
-          title: 'Order Cancelled',
-          message: 'Your order has been cancelled.',
-          color: 'text-red-500',
-        }
-      default:
-        return {
-          title: 'Order Status',
-          message: order.status,
-          color: 'text-gray-500',
-        }
-    }
-  }
-
-  const status = getStatusMessage()
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
-        <h1 className={`text-2xl font-bold mb-4 ${status.color}`}>
-          {status.title}
-        </h1>
-        <p className="text-gray-600 mb-6">{status.message}</p>
-        
-        <div className="mb-8">
-          <p className="text-sm text-gray-500">Order ID</p>
-          <p className="font-medium">{order.id}</p>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-md mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-lg shadow-lg p-6"
+        >
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Order Status</h1>
+          
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-gray-600">Order ID</p>
+              <p className="font-medium">{status.id}</p>
+            </div>
+            
+            <div>
+              <p className="text-sm text-gray-600">Status</p>
+              <p className="font-medium capitalize">{status.status}</p>
+            </div>
+            
+            {status.estimatedTime && (
+              <div>
+                <p className="text-sm text-gray-600">Estimated Time</p>
+                <p className="font-medium">{status.estimatedTime} minutes</p>
+              </div>
+            )}
+          </div>
 
-        <div className="flex justify-center">
-          <Link href="/menu" className="btn-primary">
-            Place Another Order
-          </Link>
-        </div>
+          <div className="mt-6 space-y-4">
+            <Link
+              href="/orders"
+              className="block text-center bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-dark"
+            >
+              View All Orders
+            </Link>
+            
+            <Link
+              href="/menu"
+              className="block text-center bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200"
+            >
+              Order More
+            </Link>
+          </div>
+        </motion.div>
       </div>
     </div>
+  )
+}
+
+export default function OrderStatusPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </div>
+    }>
+      <OrderStatusContent />
+    </Suspense>
   )
 } 
