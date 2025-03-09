@@ -1,15 +1,31 @@
 import { NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
+import { Order } from '@/types/order'
+
+interface OrderItem {
+  id: string
+  name: string
+  price: number
+  quantity: number
+  image?: string
+}
+
+interface DeliveryDetails {
+  name: string
+  hostelRoom: string
+  phone: string
+  instructions?: string
+}
 
 // In-memory store for orders (replace with your database)
-let orders: any[] = []
+let orders: Order[] = []
 
 export async function POST(request: Request) {
   try {
     const body = await request.json()
     
     // Validate required fields
-    if (!body.items || !body.totalAmount || !body.deliveryDetails) {
+    if (!body.items || !body.total || !body.deliveryDetails) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
         { status: 400 }
@@ -18,9 +34,11 @@ export async function POST(request: Request) {
 
     // Create new order
     const orderId = uuidv4()
-    const newOrder = {
+    const newOrder: Order = {
       id: orderId,
-      ...body,
+      items: body.items,
+      total: body.total,
+      deliveryDetails: body.deliveryDetails,
       status: 'pending',
       createdAt: new Date().toISOString(),
     }

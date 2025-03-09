@@ -4,28 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-
-interface OrderItem {
-  id: string
-  name: string
-  price: number
-  quantity: number
-  image?: string
-}
-
-interface Order {
-  id: string
-  items: OrderItem[]
-  total: number
-  status: 'pending' | 'preparing' | 'ready' | 'delivered'
-  createdAt: string
-  deliveryDetails: {
-    name: string
-    hostelRoom: string
-    phone: string
-    instructions?: string
-  }
-}
+import { Order, OrderItem } from '@/types/order'
 
 const OrderItemComponent = ({ item, orderId, index }: { item: OrderItem; orderId: string; index: number }) => (
   <div key={`${orderId}-item-${index}`} className="flex items-center gap-4 py-2">
