@@ -2,9 +2,18 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, Variants } from 'framer-motion'
 
-const featuredItems = [
+interface MenuItem {
+  id: number
+  name: string
+  description: string
+  price: number
+  image: string
+  category: string
+}
+
+const featuredItems: MenuItem[] = [
   {
     id: 1,
     name: 'Classic Burger',
@@ -31,7 +40,7 @@ const featuredItems = [
   },
 ]
 
-const container = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
@@ -41,7 +50,7 @@ const container = {
   }
 }
 
-const item = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   show: { opacity: 1, y: 0 }
 }
@@ -72,16 +81,16 @@ export function FeaturedMenu() {
         </motion.div>
         
         <motion.div 
-          variants={container}
+          variants={containerVariants}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
         >
-          {featuredItems.map((item) => (
+          {featuredItems.map((menuItem) => (
             <motion.div 
-              key={item.id}
-              variants={item}
+              key={menuItem.id}
+              variants={itemVariants}
               whileHover={{ scale: 1.05 }}
               className="bg-gray-800 rounded-2xl overflow-hidden transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-primary/20"
             >
@@ -93,12 +102,12 @@ export function FeaturedMenu() {
                     transition={{ delay: 0.5 }}
                     className="px-3 py-1 bg-primary text-white text-sm rounded-full"
                   >
-                    {item.category}
+                    {menuItem.category}
                   </motion.span>
                 </div>
                 <Image
-                  src={item.image}
-                  alt={item.name}
+                  src={menuItem.image}
+                  alt={menuItem.name}
                   fill
                   className="object-cover transform group-hover:scale-110 transition-transform duration-700"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -111,17 +120,17 @@ export function FeaturedMenu() {
                 transition={{ delay: 0.3 }}
                 className="p-6"
               >
-                <h3 className="text-xl font-semibold text-white mb-2">{item.name}</h3>
-                <p className="text-gray-400 mb-4 line-clamp-2">{item.description}</p>
+                <h3 className="text-xl font-semibold text-white mb-2">{menuItem.name}</h3>
+                <p className="text-gray-400 mb-4 line-clamp-2">{menuItem.description}</p>
                 <div className="flex justify-between items-center">
                   <motion.span 
                     whileHover={{ scale: 1.1 }}
                     className="text-2xl font-bold text-primary"
                   >
-                    ₹{item.price}
+                    ₹{menuItem.price}
                   </motion.span>
                   <Link 
-                    href={`/menu/${item.id}`} 
+                    href={`/menu/${menuItem.id}`} 
                     className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-opacity-80 transition-colors transform hover:scale-105 hover:shadow-lg hover:shadow-primary/50"
                   >
                     Order Now
